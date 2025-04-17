@@ -9,7 +9,11 @@ import (
 
 type CountingGameCommand struct {
 	id      uuid.UUID
-	counter counter.Counter
+	counter Counter
+}
+
+type Counter interface {
+	Play(string, int) error
 }
 
 func (cmd *CountingGameCommand) matches(cmdInfo CommandInfo) bool {
@@ -26,20 +30,18 @@ func (cmd *CountingGameCommand) ID() uuid.UUID {
 	return cmd.id
 }
 
-func (cmd *CountingGameCommand) Process(cmdInfo CommandInfo) {
+func (cmd *CountingGameCommand) Process(cmdInfo CommandInfo) error {
 	val, ok := cmd.parse(cmdInfo)
 	if !ok {
-		return
+		return nil
 	}
 	err := cmd.counter.Play(cmdInfo.MessageInfo.Chatter.ID, val)
 	if err != nil {
-		cmdInfo.Logger.Error("counting game failed", "reason", err)
-	} else {
-		cmdInfo.Logger.Info("count incremented")
+		cmdInfo.Logger.Error("user failed counting game", "user", cmdInfo.MessageInfo.Chatter.DisplayName, "value", val, "err", err)
 	}
-
+	return nil
 }
 
 func NewCountCommand() *CountingGameCommand {
-	return &CountingGameCommand{id: uuid.New(), counter: *counter.NewCounter()}
+	return &CountingGameCommand{id: uuid.New(), counter: counter.NewCounter()}
 }

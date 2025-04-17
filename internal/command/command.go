@@ -13,5 +13,5 @@ type CommandMatcher interface {
 }
 
 type CommandRunnable interface {
-	Process(CommandInfo)
+	Process(CommandInfo) error
 }
